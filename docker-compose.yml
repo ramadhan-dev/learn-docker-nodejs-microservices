@@ -1,0 +1,53 @@
+version: "3"
+services:
+  api-getway:
+    build: "./api-getway"
+    depends_on: 
+      - listening-service
+      - user-service
+    ports:
+      - 0.0.0.0:7000:7000
+    volumes:
+      - ./api-getway:/opt/app
+
+  listening-service:
+    build: "./listening-service"
+    depends_on: 
+      - listening-service-db
+    environment:
+      - DB_URI=mysql://root:password@listening-service-db/db?charset=UTF8
+    ports:
+      - 0.0.0.0:7101:7101
+    volumes:
+      - ./listening-service:/opt/app
+    
+  listening-service-db:
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_ROOT_DB=db
+    image: mysql:5.7.20
+    ports:
+      - 0.0.0.0:7200:3306
+    volumes:
+      - ./data_listening:/var/lib/mysql
+
+  user-service:
+    build: "./user-service"
+    depends_on: 
+      - user-service-db
+    environment:
+      - DB_URI=mysql://root:password@user-service-db/db?charset=UTF8
+    ports:
+      - 7100:7100
+    volumes:
+      - ./user-service:/opt/app
+    
+  user-service-db:
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_ROOT_DB=db
+    image: mysql:5.7.20
+    ports:
+      - 0.0.0.0:7201:3306 
+    volumes:
+      - ./data_user:/var/lib/mysqluser
